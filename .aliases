@@ -1,0 +1,7 @@
+#!/bin/sh
+
+alias build="sudo rm -rf zig-cache && zig build"
+alias run="./zig-out/bin/rat"
+alias release="sudo rm -rf zig-cache && zig build --release=safe"
+alias develop="sudo watchexec -w src zig build"
+alias logs="tail -f ~/.local/share/rat.log"
