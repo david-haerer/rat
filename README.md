@@ -41,10 +41,18 @@ The action taken depends on the current mode.
 
 Key | Direction
 ----|---------
-`LEFT` / `h` | Left
+`h` / `LEFT` | Left
+`y` | Left + 30° Up
+`u` | Up + 30° Left
+`k` / `UP` | Up
+`i` | Up + 30° Right
+`o` | Right + 30° Up
+`l` / `RIGHT` | Right
+`.` | Right + 30° Down
+`,` | Down + 30° Right
 `DOWN` / `j` | Down
-`UP` / `k` | Up
-`RIGHT` / `l` | Right
+`m` | Down + 30° Left
+`n` | Left + 30° Down 
 
 ### Buttons
 
