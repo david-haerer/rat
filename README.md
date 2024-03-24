@@ -23,6 +23,7 @@ Rat grabs the keyboard during execution, such that only the following keys are a
 ### Modes
 
 The following keys change the mode Rat is working in.
+Rat starts in normal mode.
 
 Key | Mode
 ----|---------
@@ -75,7 +76,6 @@ Name | Platform | Description
 [vimac](https://vimacapp.com/) | `macOS` | Stop using your clunky trackpad/mouse now.
 [Homerow](https://www.homerow.app/) | `macOS` | Keyboard shortcuts for every button in macOS.
 [Superkey](https://superkey.app/) | `macOS` | Simple and powerful keyboard enhancement on macOS.
-
 
 ## Troubleshooting
 
