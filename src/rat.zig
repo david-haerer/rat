@@ -53,8 +53,13 @@ pub const Rat = struct {
     }
 
     fn scroll(self: *Rat, vec: geo.Vec) void {
-        if (vec.x != 0) self.server.scrollHorizontal(@intFromFloat(vec.x));
-        if (vec.y != 0) self.server.scrollVertical(@intFromFloat(vec.y));
+        self.scroll_remainder.add(vec);
+        const x: i32 = @intFromFloat(self.scroll_remainder.x);
+        const y: i32 = @intFromFloat(self.scroll_remainder.y);
+        if (x != 0) self.server.scrollHorizontal(x);
+        if (y != 0) self.server.scrollVertical(y);
+        self.scroll_remainder.x -= @floatFromInt(x);
+        self.scroll_remainder.y -= @floatFromInt(y);
     }
 
     pub fn setMode(self: *Rat, mode: io.Mode) void {
