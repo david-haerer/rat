@@ -50,7 +50,7 @@ Key | Direction
 `l` / `RIGHT` | Right
 `.` | Right + 30° Down
 `,` | Down + 30° Right
-`DOWN` / `j` | Down
+`j` / `DOWN` | Down
 `m` | Down + 30° Left
 `n` | Left + 30° Down 
 
@@ -101,15 +101,16 @@ The log outputs of Rat can be found in `$HOME/.local/share/rat.log`.
 
 ## Contributing
 
-Thank you for considering to contribute ❤️!
+Thank you for considering to contribute! ❤️
 
 ### Feedback
 
-If you run into problems or have feedback, feel free to open a [GitHub issue](https://github.com/david-haerer/rat/issues).
+If you run into problems or have feedback in general, feel free to open a [GitHub issue](https://github.com/david-haerer/rat/issues).
 
 ### Development
 
 If you want to work on the code yourself, see [DEVELOPMENT.md](./DEVELOPMENT.md) for further documentation.
 
 > [!TIP]
-> For ideas on what to work on, have a look at the [GitHub issues](https://github.com/david-haerer/rat/issues).
+> For ideas on what to work on, have a look at the [GitHub issues](https://github.com/david-haerer/rat/issues)
+> or the [Roadmap commit](https://github.com/david-haerer/rat/commit/dev).
