@@ -12,6 +12,8 @@ pub const Rat = struct {
     acceleration: f32 = config.NORMAL_ACCELERATION,
     server: Server,
     scroll_remainder: geo.Vec = geo.Vec{},
+    stop: ?geo.Direction = null,
+    stop_old: ?geo.Direction = null,
 
     pub fn init() !Rat {
         const time: Time = try Time.init();
@@ -31,6 +33,7 @@ pub const Rat = struct {
 
     pub fn move(self: *Rat) void {
         if (!self.time.nextFrame()) return;
+        if (self.stop != null) return;
         self.accelerate();
         if (self.speed.isNull()) return;
         switch (self.mode) {
@@ -95,14 +98,24 @@ pub const Rat = struct {
 
     pub fn pressKey(self: *Rat, direction: geo.Direction) bool {
         const key = &self.keys[@intFromEnum(direction)];
-        if (!key.press(self.time.now)) return false;
-        if (self.speed.dot(direction.unitVec()) < 0) self.speed.setNull();
+        if (!key.press(self.time.now)) {
+            self.stop = self.stop_old;
+            return false;
+        }
+        if (self.speed.dot(direction.unitVec()) < 0) {
+            self.stop = direction;
+            self.speed.setNull();
+        }
         return true;
     }
 
     pub fn releaseKey(self: *Rat, direction: geo.Direction) void {
         const key = &self.keys[@intFromEnum(direction)];
         key.release(self.time.now);
+        if (self.stop == direction) {
+            self.stop_old = self.stop;
+            self.stop = null;
+        }
     }
 
     pub fn handlePress(self: *Rat, input: io.Input) void {
