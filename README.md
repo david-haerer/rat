@@ -39,20 +39,16 @@ The action taken depends on the current mode.
 * In normal mode, the pointer is moved.
 * In scroll mode, the page is scrolled.
 
-Key | Direction
-----|---------
-`h` / `LEFT` | Left
-`y` | Left + 30° Up
-`u` | Up + 30° Left
-`k` / `UP` | Up
-`i` | Up + 30° Right
-`o` | Right + 30° Up
-`l` / `RIGHT` | Right
-`.` | Right + 30° Down
-`,` | Down + 30° Right
-`j` / `DOWN` | Down
-`m` | Down + 30° Left
-`n` | Left + 30° Down 
+| Key           | Direction | Key | Direction        |
+|---------------|-----------|-----|------------------|
+| `h` / `LEFT`  | Left      | `n` | Left + 30° Down  |
+|               |           | `y` | Left + 30° Up    |
+| `j` / `DOWN`  | Down      | `m` | Down + 30° Left  |
+|               |           | `,` | Down + 30° Right |
+| `k` / `UP`    | Up        | `u` | Up + 30° Left    |
+|               |           | `i` | Up + 30° Right   |
+| `l` / `RIGHT` | Right     | `.` | Right + 30° Down |
+|               |           | `o` | Right + 30° Up   |
 
 ### Buttons
 
