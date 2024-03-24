@@ -1,5 +1,10 @@
 const std = @import("std");
 
+const COS_30 = 0.866025;
+const SIN_30 = 0.5;
+const COS_60 = 0.5;
+const SIN_60 = 0.866025;
+
 pub const Vec = struct {
     x: f32 = 0,
     y: f32 = 0,
@@ -38,10 +43,18 @@ pub const Vec = struct {
 };
 
 pub const Direction = enum(u8) {
+    LEFT_DOWN,
     LEFT,
+    LEFT_UP,
+    UP_LEFT,
     UP,
+    UP_RIGHT,
+    RIGHT_UP,
     RIGHT,
+    RIGHT_DOWN,
+    DOWN_RIGHT,
     DOWN,
+    DOWN_LEFT,
 
     pub fn unitVec(self: Direction) Vec {
         return switch (self) {
@@ -49,6 +62,14 @@ pub const Direction = enum(u8) {
             .DOWN => Vec{ .x = 0, .y = 1 },
             .LEFT => Vec{ .x = -1, .y = 0 },
             .RIGHT => Vec{ .x = 1, .y = 0 },
+            .LEFT_UP => Vec{ .x = -COS_30, .y = -SIN_30 },
+            .UP_LEFT => Vec{ .x = -COS_60, .y = -SIN_60 },
+            .LEFT_DOWN => Vec{ .x = -COS_30, .y = SIN_30 },
+            .DOWN_LEFT => Vec{ .x = -COS_60, .y = SIN_60 },
+            .RIGHT_UP => Vec{ .x = COS_30, .y = -SIN_30 },
+            .UP_RIGHT => Vec{ .x = COS_60, .y = -SIN_60 },
+            .RIGHT_DOWN => Vec{ .x = COS_30, .y = SIN_30 },
+            .DOWN_RIGHT => Vec{ .x = COS_60, .y = SIN_60 },
         };
     }
 

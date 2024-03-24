@@ -43,7 +43,7 @@ pub const Key = struct {
     }
 };
 
-pub const Keys = [4]Key;
+pub const Keys = [12]Key;
 
 const InputTag = enum { mode, direction, button };
 
@@ -58,6 +58,14 @@ pub const Input = union(InputTag) {
             c.XK_j, c.XK_Down => Input{ .direction = geo.Direction.DOWN },
             c.XK_k, c.XK_Up => Input{ .direction = geo.Direction.UP },
             c.XK_l, c.XK_Right => Input{ .direction = geo.Direction.RIGHT },
+            c.XK_y => Input{ .direction = geo.Direction.LEFT_UP },
+            c.XK_u => Input{ .direction = geo.Direction.UP_LEFT },
+            c.XK_n => Input{ .direction = geo.Direction.LEFT_DOWN },
+            c.XK_m => Input{ .direction = geo.Direction.DOWN_LEFT },
+            c.XK_o => Input{ .direction = geo.Direction.RIGHT_UP },
+            c.XK_i => Input{ .direction = geo.Direction.UP_RIGHT },
+            c.XK_period => Input{ .direction = geo.Direction.RIGHT_DOWN },
+            c.XK_comma => Input{ .direction = geo.Direction.DOWN_RIGHT },
             c.XK_space => Input{ .button = Button.Left },
             c.XK_x => Input{ .button = Button.Middle },
             c.XK_r => Input{ .button = Button.Right },
