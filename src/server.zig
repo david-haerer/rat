@@ -40,6 +40,7 @@ fn grabKeyboard(display: Display, window: Window) Error!void {
 
 pub const Server = struct {
     display: Display,
+    root: Window,
     event: ?io.Event = null,
 
     pub fn connect() Error!Server {
@@ -52,11 +53,11 @@ pub const Server = struct {
             std.log.err("XTEST extension not available!", .{});
             return Error.XTestNotAvailable;
         }
-        const root_window: Window = c.DefaultRootWindow(display);
-        _ = c.XSelectInput(display, root_window, c.KeyPressMask | c.KeyReleaseMask);
+        const root: Window = c.DefaultRootWindow(display);
+        _ = c.XSelectInput(display, root, c.KeyPressMask | c.KeyReleaseMask);
         var count: usize = 0;
         while (true) {
-            grabKeyboard(display, root_window) catch {
+            grabKeyboard(display, root) catch {
                 count += 1;
                 std.time.sleep(10 * std.time.ns_per_ms);
                 if (count == 100) {
@@ -67,7 +68,7 @@ pub const Server = struct {
             };
             break;
         }
-        return Server{ .display = display };
+        return Server{ .display = display, .root = root };
     }
 
     pub fn disconnect(self: Server) void {
