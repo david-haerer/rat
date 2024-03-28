@@ -8,6 +8,7 @@ const config = @import("config.zig");
 
 pub const Mode = enum { Exit, Normal, Scroll };
 pub const Button = enum(u8) { Left = 1, Middle = 2, Right = 3 };
+pub const Scroll = enum(u8) { Up = 4, Down = 5, Left = 6, Right = 7 };
 pub const KeyCode = c_ulong;
 pub const EventType = enum { Press, Release };
 pub const Event = struct { key: KeyCode, type: EventType };

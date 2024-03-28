@@ -75,22 +75,9 @@ pub const Server = struct {
         _ = c.XCloseDisplay(self.display);
     }
 
-    pub fn scrollVertical(self: Server, clicks: i32) void {
-        const button_code: u8 = switch (clicks > 0) {
-            true => 5,
-            false => 4,
-        };
-        for (0..@abs(clicks)) |_| {
-            _ = c.XTestFakeButtonEvent(self.display, button_code, c.True, c.CurrentTime);
-            _ = c.XTestFakeButtonEvent(self.display, button_code, c.False, c.CurrentTime);
-        }
-    }
-
-    pub fn scrollHorizontal(self: Server, clicks: i32) void {
-        const shift = c.XKeysymToKeycode(self.display, io.KEY_SHIFT_LEFT);
-        _ = c.XTestFakeKeyEvent(self.display, shift, c.True, c.CurrentTime);
-        self.scrollVertical(clicks);
-        _ = c.XTestFakeKeyEvent(self.display, shift, c.False, c.CurrentTime);
+    pub fn scroll(self: Server, button: io.Scroll) void {
+        _ = c.XTestFakeButtonEvent(self.display, @intFromEnum(button), c.True, c.CurrentTime);
+        _ = c.XTestFakeButtonEvent(self.display, @intFromEnum(button), c.False, c.CurrentTime);
     }
 
     pub fn move(self: Server, x: i32, y: i32) void {

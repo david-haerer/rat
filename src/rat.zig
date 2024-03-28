@@ -59,8 +59,10 @@ pub const Rat = struct {
         self.scroll_remainder.add(vec);
         const x: i32 = @intFromFloat(self.scroll_remainder.x);
         const y: i32 = @intFromFloat(self.scroll_remainder.y);
-        if (x != 0) self.server.scrollHorizontal(x);
-        if (y != 0) self.server.scrollVertical(y);
+        if (y > 0) for (0..@abs(y)) |_| self.server.scroll(io.Scroll.Down);
+        if (y < 0) for (0..@abs(y)) |_| self.server.scroll(io.Scroll.Up);
+        if (x > 0) for (0..@abs(x)) |_| self.server.scroll(io.Scroll.Right);
+        if (x < 0) for (0..@abs(x)) |_| self.server.scroll(io.Scroll.Left);
         self.scroll_remainder.x -= @floatFromInt(x);
         self.scroll_remainder.y -= @floatFromInt(y);
     }
