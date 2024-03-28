@@ -109,4 +109,4 @@ If you want to work on the code yourself, see [DEVELOPMENT.md](./DEVELOPMENT.md)
 
 > [!TIP]
 > For ideas on what to work on, have a look at the [GitHub issues](https://github.com/david-haerer/rat/issues)
-> or the [Roadmap commit](https://github.com/david-haerer/rat/commit/dev).
+> or the [Roadmap commit](https://github.com/david-haerer/rat/commit/main).
