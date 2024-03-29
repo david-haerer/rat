@@ -100,6 +100,25 @@ pub const Server = struct {
         return true;
     }
 
+    pub fn getPosition(self: Server) void {
+        var child: Window = undefined;
+        var root_x: c_int = undefined;
+        var root_y: c_int = undefined;
+        var win_x: c_int = undefined;
+        var win_y: c_int = undefined;
+        var mask: c_uint = undefined;
+        if (c.XQueryPointer(self.display, self.root, &self.root, &child, &root_x, &root_y, &win_x, &win_y, &mask) == 0) {
+            std.log.warn("The pointer is on a different screen!", .{});
+            return;
+        }
+        std.log.debug("root={}", .{self.root});
+        std.log.debug("child={}", .{child});
+        std.log.debug("root_x={}, root_y={}", .{ root_x, root_y });
+        std.log.debug("win_x={}, win_y={}", .{ win_x, win_y });
+        std.log.debug("mask={}", .{mask});
+        // return root_x, root_y;
+    }
+
     pub fn pressButton(self: Server, button: io.Button) void {
         _ = c.XTestFakeButtonEvent(self.display, @intFromEnum(button), c.True, c.CurrentTime);
     }
