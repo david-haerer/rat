@@ -2,6 +2,9 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("X11/Xlib.h");
     @cInclude("X11/extensions/XTest.h");
+    @cInclude("X11/extensions/XInput.h");
+    @cInclude("X11/extensions/XInput2.h");
+    @cInclude("string.h");
 });
 const io = @import("io.zig");
 
@@ -16,26 +19,89 @@ fn isXTestAvailable(display: Display) bool {
     return c.XQueryExtension(display, "XTEST", &major_opcode, &first_event, &first_error) != 0;
 }
 
-fn grabKeyboard(display: Display, window: Window) Error!void {
-    const status = c.XGrabKeyboard(display, window, c.False, c.GrabModeAsync, c.GrabModeAsync, c.CurrentTime);
-    switch (status) {
-        c.AlreadyGrabbed => {
-            std.log.warn("Keyboard already grabbed!", .{});
-        },
-        c.GrabNotViewable => {
-            std.log.warn("Grab window is not viewable!", .{});
-        },
-        c.GrabFrozen => {
-            std.log.warn("Keyboard is frozen by an active grab of another client!", .{});
-        },
-        c.GrabInvalidTime => {
-            std.log.warn("Specified time is earlier than the last keyboard-grab time or later than the current X server time.", .{});
-        },
-        else => {
-            return;
-        },
+var nr_grabbed_device_ids: c_int = 0;
+var grabbed_device_ids: [64]c_int = undefined;
+
+fn reset_keyboard(display: Display) void {
+    // send a key up event for any depressed keys to avoid infinite repeat.
+    var keymap: [32]u8 = undefined;
+    _ = c.XQueryKeymap(display, &keymap);
+    for (0..256) |i| {
+        if ((keymap[i / 8] >> @intCast(i % 8)) & 0x01 != 0) {
+            _ = c.XTestFakeKeyEvent(display, @intCast(i), 0, c.CurrentTime);
+        }
     }
-    return Error.GrabKeyboardFailed;
+    _ = c.XSync(display, c.False);
+}
+
+fn grab(display: Display, window: Window, device_id: c_int) Error!void {
+    var mask: u8 = c.XI_KeyPressMask | c.XI_KeyReleaseMask;
+    var event_mask: c.XIEventMask = c.XIEventMask{
+        .deviceid = c.XIAllDevices,
+        .mask_len = c.XIMaskLen(c.XI_LASTEVENT),
+        .mask = @ptrCast(&mask),
+    };
+    const rc = c.XIGrabDevice(display, device_id, window, c.CurrentTime, c.None, c.GrabModeAsync, c.GrabModeAsync, c.False, &event_mask);
+    if (rc != 0) {
+        var n: c_int = undefined;
+        const info: *c.XIDeviceInfo = c.XIQueryDevice(display, device_id, &n);
+        std.log.err("Failed to grab keyboard {s}: {}", .{ info.name, rc });
+        return Error.GrabKeyboardFailed;
+    }
+    _ = c.XSync(display, c.False);
+}
+
+fn grabKeyboard(display: Display, window: Window) Error!void {
+    std.log.debug("grabKeyboard", .{});
+    var n: c_int = undefined;
+    if (nr_grabbed_device_ids != 0) return;
+
+    const devices = c.XIQueryDevice(display, c.XIAllDevices, &n);
+
+    for (0..@intCast(n)) |i| {
+        if ((devices[i].use == c.XISlaveKeyboard) or (devices[i].use == c.XIFloatingSlave)) {
+            if (c.strstr(devices[i].name, "XTEST") == null and devices[i].enabled != 0) {
+                const id: c_int = devices[i].deviceid;
+                try grab(display, window, id);
+                grabbed_device_ids[@intCast(nr_grabbed_device_ids)] = id;
+                nr_grabbed_device_ids += 1;
+            }
+        }
+    }
+
+    reset_keyboard(display);
+    c.XIFreeDeviceInfo(devices);
+    _ = c.XSync(display, c.False);
+}
+
+fn ungrabKeyboard(display: Display) void {
+    if (nr_grabbed_device_ids == 0) return;
+
+    for (0..@intCast(nr_grabbed_device_ids)) |i| {
+        var n: c_int = undefined;
+        const info: *c.XIDeviceInfo = c.XIQueryDevice(display, grabbed_device_ids[i], &n);
+        if (n != 1) return;
+
+        // NOTE: Attempting to ungrab a disabled xinput device
+        // causes X to crash.
+        //
+        // (see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11).
+        //
+        // This generally shouldn't happen unless the user
+        // switches virtual terminals while warpd is running. We
+        // used to explicitly check for this and perform weird
+        // hacks to mitigate against it, but now we only grab
+        // the keyboard when the program is in one if its
+        // active modes which reduces the likelihood
+        // sufficiently to not to warrant the additional
+        // complexity.
+
+        if (info.enabled == 0) return;
+        _ = c.XIUngrabDevice(display, grabbed_device_ids[i], c.CurrentTime);
+    }
+
+    nr_grabbed_device_ids = 0;
+    _ = c.XSync(display, c.False);
 }
 
 pub const Server = struct {
@@ -55,24 +121,12 @@ pub const Server = struct {
         }
         const root: Window = c.DefaultRootWindow(display);
         _ = c.XSelectInput(display, root, c.KeyPressMask | c.KeyReleaseMask);
-        var count: usize = 0;
-        while (true) {
-            grabKeyboard(display, root) catch {
-                count += 1;
-                std.time.sleep(10 * std.time.ns_per_ms);
-                if (count == 100) {
-                    _ = c.XCloseDisplay(display);
-                    return Error.GrabKeyboardFailed;
-                }
-                continue;
-            };
-            break;
-        }
+        try grabKeyboard(display, root);
         return Server{ .display = display, .root = root };
     }
 
     pub fn disconnect(self: Server) void {
-        _ = c.XUngrabKeyboard(self.display, c.CurrentTime);
+        ungrabKeyboard(self.display);
         _ = c.XCloseDisplay(self.display);
     }
 
@@ -100,7 +154,7 @@ pub const Server = struct {
         return true;
     }
 
-    pub fn getPosition(self: Server) void {
+    pub fn getPosition(self: *Server) void {
         var child: Window = undefined;
         var root_x: c_int = undefined;
         var root_y: c_int = undefined;
@@ -111,15 +165,10 @@ pub const Server = struct {
             std.log.warn("The pointer is on a different screen!", .{});
             return;
         }
-        std.log.debug("root={}", .{self.root});
-        std.log.debug("child={}", .{child});
-        std.log.debug("root_x={}, root_y={}", .{ root_x, root_y });
-        std.log.debug("win_x={}, win_y={}", .{ win_x, win_y });
-        std.log.debug("mask={}", .{mask});
-        // return root_x, root_y;
+        std.log.debug("x={}, y={}", .{ root_x, root_y });
     }
 
-    pub fn pressButton(self: Server, button: io.Button) void {
+    pub fn pressButton(self: *Server, button: io.Button) void {
         _ = c.XTestFakeButtonEvent(self.display, @intFromEnum(button), c.True, c.CurrentTime);
     }
 
