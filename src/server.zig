@@ -1,7 +1,8 @@
 const std = @import("std");
 const c = @cImport({
-    @cInclude("X11/Xlib.h");
-    @cInclude("X11/extensions/XTest.h");
+    @cInclude("linux/input.h");
+    @cInclude("libevdev-1.0/libevdev/libevdev.h");
+    // @cInclude("libevdev-1.0/libevdev/libevdev-uinput.h");
 });
 const io = @import("io.zig");
 

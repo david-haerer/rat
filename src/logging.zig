@@ -7,10 +7,15 @@ pub fn logFn(
     args: anytype,
 ) void {
     const allocator = std.heap.page_allocator;
-    const home = std.os.getenv("HOME") orelse {
-        std.debug.print("Failed to read $HOME.\n", .{});
-        return;
-    };
+    // const env = std.process.getEnvMap(allocator) catch {
+    //     std.debug.print("Failed to get the environment.\n", .{});
+    //     return;
+    // };
+    // const home = env.get("HOME") orelse {
+    //     std.debug.print("Failed to read $HOME.\n", .{});
+    //     return;
+    // };
+    const home = "/home/david";
     const path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ home, ".local/share/rat.log" }) catch |err| {
         std.debug.print("Failed to create log file path: {}\n", .{err});
         return;
@@ -43,7 +48,7 @@ pub fn logFn(
 
     const prefix = "[" ++ comptime level.asText() ++ "] ";
     var buffer: [256]u8 = undefined;
-    const message = std.fmt.bufPrint(buffer[0..], prefix ++ format ++ "\n", args) catch |err| {
+    const message = std.fmt.bufPrint(&buffer, prefix ++ format ++ "\n", args) catch |err| {
         std.debug.print("Failed to format log message: {}\n", .{err});
         return;
     };
